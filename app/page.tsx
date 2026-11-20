@@ -158,11 +158,18 @@ export default function Home() {
   if (!loaded) return <div className="min-h-dvh" />;
 
   return (
-    // Phone-first. On laptops the same layout sits in a frame instead of being stretched.
-    <div className="lg:min-h-dvh lg:bg-[linear-gradient(135deg,#f1ecff_0%,#f7f6fb_45%,#fff3ea_100%)] lg:flex lg:items-start lg:justify-center lg:gap-14 lg:px-10 lg:py-10">
+    // Phone-first, responsive like SuperProfile's own pages: on laptops each screen reflows into
+    // columns instead of being shrunk into a phone-width strip.
+    <div className="lg:min-h-dvh lg:bg-[linear-gradient(135deg,#f1ecff_0%,#f7f6fb_45%,#fff3ea_100%)]">
+    {draft.step === "input" && <DesktopTopBar />}
+    <div className={draft.step === "input" ? "lg:max-w-6xl lg:mx-auto lg:px-10 lg:pt-6 lg:pb-16 lg:flex lg:items-start lg:justify-between lg:gap-16" : ""}>
     <main
-      className={`mx-auto lg:mx-0 w-full max-w-md min-h-dvh bg-white shadow-[0_0_40px_rgba(0,0,0,0.04)] relative ${
-        draft.step === "input" ? "lg:min-h-0 lg:rounded-3xl lg:shadow-xl" : "lg:shadow-xl"
+      className={`mx-auto w-full max-w-md min-h-dvh bg-white shadow-[0_0_40px_rgba(0,0,0,0.04)] relative ${
+        draft.step === "input"
+          ? "lg:mx-0 lg:max-w-xl lg:min-h-0 lg:bg-transparent lg:shadow-none"
+          : draft.step === "edit"
+            ? "lg:max-w-6xl lg:shadow-xl"
+            : "lg:max-w-3xl lg:min-h-0 lg:my-10 lg:rounded-3xl lg:shadow-xl"
       }`}
     >
       {draft.step === "input" && (
@@ -184,6 +191,24 @@ export default function Home() {
             onTheme={(theme) => set({ store: { ...draft.store!, theme } })}
             onBack={() => set({ step: "input" })}
             published={!!draft.slug}
+            actions={
+              <div className="hidden lg:flex gap-2 ml-2">
+                <button
+                  onClick={() => setConfirmAll(true)}
+                  disabled={!!busy}
+                  className="px-4 py-2.5 rounded-xl font-bold border border-[var(--line)] bg-white text-sm disabled:opacity-50"
+                >
+                  ↻ Redo all
+                </button>
+                <button
+                  onClick={publish}
+                  disabled={!!busy}
+                  className="px-5 py-2.5 rounded-xl font-bold text-white bg-[var(--brand)] text-sm disabled:opacity-60"
+                >
+                  {busy === "publish" ? <Spinner /> : draft.slug ? "Update my page" : "Publish my page →"}
+                </button>
+              </div>
+            }
           />
           {notice && <Banner notice={notice} onClose={() => setNotice(null)} onRetry={notice.kind === "error" ? generate : undefined} />}
           {draft.store.assumptions.length > 0 && (
@@ -199,16 +224,16 @@ export default function Home() {
           )}
           <p className="text-center text-[12px] text-[var(--soft)] mt-3 mb-1">
             ✏️ Tap any text to edit · ↻ to get a new version
-            <span className="hidden lg:block mt-0.5">This is how buyers see it on their phone.</span>
+            <span className="hidden lg:inline"> · This is how buyers see your page on a laptop; on a phone it stacks into one column.</span>
           </p>
-          <div className="mx-3 rounded-3xl overflow-hidden border border-[var(--line)]">
+          <div className="mx-3 lg:mx-6 rounded-3xl overflow-clip border border-[var(--line)]">
             <StoreView
               store={draft.store}
               edit={{ onChange: (s) => set({ store: s }), onRegenerate: regenerate, busy }}
             />
           </div>
-          <div className="h-28" />
-          <BottomBar>
+          <div className="h-28 lg:h-10" />
+          <BottomBar hideOnDesktop>
             <button
               onClick={() => setConfirmAll(true)}
               disabled={!!busy}
@@ -276,6 +301,7 @@ export default function Home() {
       )}
     </main>
     {draft.step === "input" && <DesktopShowcase />}
+    </div>
     </div>
   );
 }
@@ -363,8 +389,8 @@ function InputScreen({
 }) {
   const canSubmit = input.handle.trim() || input.description.trim();
   return (
-    <div className="px-5 pt-8 pb-32 lg:pb-8 lg:px-8">
-      <div className="flex items-center justify-between gap-3">
+    <div className="px-5 pt-8 pb-32 lg:pb-8 lg:px-0">
+      <div className="flex items-center justify-between gap-3 lg:hidden">
         <div className="inline-flex items-center gap-2 text-[12px] font-bold text-[var(--brand)] bg-[var(--brand-soft)] px-3 py-1 rounded-full">
           ✨ AI Storefront
         </div>
@@ -372,7 +398,7 @@ function InputScreen({
           See an example store →
         </a>
       </div>
-      <h1 className="text-[30px] leading-[1.1] font-extrabold mt-4 tracking-tight">
+      <h1 className="text-[30px] lg:text-[46px] leading-[1.1] font-extrabold mt-4 lg:mt-6 tracking-tight">
         Your store, ready to share in a minute.
       </h1>
       <p className="text-[var(--soft)] mt-3 text-[15px] leading-relaxed">
@@ -546,14 +572,16 @@ function EditorHeader({
   onTheme,
   onBack,
   published,
+  actions,
 }: {
   store: Store;
   onTheme: (t: Store["theme"]) => void;
   onBack: () => void;
   published: boolean;
+  actions?: React.ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-[var(--line)] px-4 py-3 flex items-center gap-3">
+    <div className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-[var(--line)] px-4 lg:px-6 py-3 flex items-center gap-3">
       <button onClick={onBack} className="text-sm font-semibold text-[var(--soft)]" aria-label="Back to details">
         ← Details
       </button>
@@ -571,7 +599,24 @@ function EditorHeader({
           />
         ))}
       </div>
+      {actions}
     </div>
+  );
+}
+
+/** Laptop-only top bar on the first screen, so it reads as a web page. */
+function DesktopTopBar() {
+  return (
+    <header className="hidden lg:block border-b border-white/60 bg-white/50 backdrop-blur">
+      <div className="max-w-6xl mx-auto px-10 h-16 flex items-center justify-between">
+        <span className="font-extrabold text-[17px] tracking-tight">
+          ✨ AI Storefront <span className="font-medium text-[var(--soft)] text-[14px]">for Indian creators</span>
+        </span>
+        <a href={`/${EXAMPLE_SLUG}`} className="text-[14px] font-semibold text-[var(--brand)]">
+          See an example store →
+        </a>
+      </div>
+    </header>
   );
 }
 
@@ -618,11 +663,14 @@ function Published({
   }
 
   return (
-    <div className="px-5 pt-10 pb-10 rise">
+    <div className="px-5 pt-10 pb-10 lg:px-10 rise">
       <div className="w-14 h-14 rounded-full bg-[#0e9f6e] text-white grid place-items-center text-2xl">✓</div>
-      <h2 className="text-[28px] font-extrabold mt-4 leading-tight">Your store is live!</h2>
+      <h2 className="text-[28px] lg:text-[34px] font-extrabold mt-4 leading-tight">Your store is live!</h2>
       <p className="text-[var(--soft)] mt-1">Share it where your audience already is.</p>
 
+      {/* Laptops: sharing on the left, reminders and stats on the right */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+      <div>
       <div className="mt-6 rounded-2xl border border-[var(--line)] p-3 flex items-center gap-2">
         <span className="flex-1 truncate font-semibold text-[15px]">{url.replace(/^https?:\/\//, "")}</span>
         <button onClick={() => copy(url, "link")} className="px-3 py-2 rounded-xl bg-[#16131f] text-white text-sm font-bold">
@@ -649,7 +697,9 @@ function Published({
       >
         {copied === "bio" ? "Copied — paste it in Instagram → Edit profile → Links" : "Copy link for Instagram bio"}
       </button>
+      </div>
 
+      <div>
       {missing > 0 && (
         <div className="mt-6 rounded-2xl bg-amber-50 border border-amber-200 p-4 text-[13.5px] text-amber-900">
           <b>
@@ -662,7 +712,7 @@ function Published({
         </div>
       )}
 
-      <div className="mt-8 rounded-2xl bg-[#f7f6fb] p-4">
+      <div className={`mt-8 rounded-2xl bg-[#f7f6fb] p-4 ${missing > 0 ? "" : "lg:mt-6"}`}>
         <div className="flex items-center justify-between">
           <b className="text-sm">Your page so far</b>
           <button onClick={loadStats} className="text-xs font-semibold text-[var(--brand)]">Refresh</button>
@@ -672,6 +722,8 @@ function Published({
           <Stat label="Buy clicks" value={stats?.clicks} />
         </div>
         <p className="text-xs text-[var(--soft)] mt-3">Tip: put the link in your bio and post a story today. Most first sales come from a story.</p>
+      </div>
+      </div>
       </div>
 
       <div className="flex gap-3 mt-6">
@@ -757,12 +809,20 @@ function Banner({
   );
 }
 
-function BottomBar({ children, inlineOnDesktop }: { children: React.ReactNode; inlineOnDesktop?: boolean }) {
+function BottomBar({
+  children,
+  inlineOnDesktop,
+  hideOnDesktop,
+}: {
+  children: React.ReactNode;
+  inlineOnDesktop?: boolean;
+  hideOnDesktop?: boolean;
+}) {
   return (
     <div
       className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-white/95 backdrop-blur border-t border-[var(--line)] px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] flex gap-3 ${
         inlineOnDesktop ? "lg:static lg:translate-x-0 lg:max-w-none lg:bg-transparent lg:border-0 lg:p-0 lg:mt-2" : ""
-      }`}
+      } ${hideOnDesktop ? "lg:hidden" : ""}`}
     >
       {children}
     </div>

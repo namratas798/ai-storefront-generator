@@ -51,10 +51,10 @@ export default function PublicStore({ store }: { store: PublicStoreData }) {
   return (
     // Phones: full-screen page. Laptops: the theme fills the screen and the store is a centred card,
     // the usual link-in-bio look on desktop.
-    <div className="min-h-dvh lg:py-10" style={{ background: t.bg }}>
+    <div className="min-h-dvh lg:py-10 lg:px-10" style={{ background: t.bg }}>
     <div className="hidden lg:block fixed inset-x-0 top-0 h-72 opacity-25 pointer-events-none" style={{ background: t.hero }} />
     <main
-      className="relative mx-auto max-w-md min-h-dvh lg:min-h-0 lg:rounded-3xl lg:overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.06)] lg:shadow-2xl"
+      className="relative mx-auto max-w-md lg:max-w-6xl min-h-dvh lg:min-h-0 lg:rounded-3xl lg:overflow-clip shadow-[0_0_40px_rgba(0,0,0,0.06)] lg:shadow-2xl"
       style={{ background: t.bg }}
     >
       {isExample && (

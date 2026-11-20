@@ -65,10 +65,13 @@ export default function StoreView({ store, edit, onBuy }: Props) {
     edit?.onChange({ ...store, products: store.products.map((p) => (p.id === id ? { ...p, ...patch } : p)) });
 
   return (
-    <div style={{ background: t.bg, color: t.text }} className="min-h-full pb-6">
+    // Responds to the width it is given (container query), not the screen: one column in a phone
+    // or the small example preview, two columns (profile | products) when there is room.
+    <div style={{ background: t.bg, color: t.text }} className="@container min-h-full pb-6">
       {/* Hero */}
-      <div style={{ background: t.hero }} className="h-28 w-full" />
-      <div className="px-5 -mt-12">
+      <div style={{ background: t.hero }} className="h-28 @4xl:h-44 w-full" />
+      <div className="@4xl:grid @4xl:grid-cols-[320px_minmax(0,1fr)] @4xl:gap-10 @4xl:px-10 @5xl:grid-cols-[360px_minmax(0,1fr)] @5xl:gap-14">
+      <aside className="px-5 -mt-12 @4xl:-mt-16 @4xl:px-0 @4xl:sticky @4xl:top-20 @4xl:self-start">
         <div
           className="w-24 h-24 rounded-full grid place-items-center text-3xl font-bold shadow-lg border-4"
           style={{ background: t.card, color: t.accent, borderColor: t.bg }}
@@ -124,11 +127,11 @@ export default function StoreView({ store, edit, onBuy }: Props) {
             maxLength={600}
           />
         </Block>
-      </div>
+      </aside>
 
-      {/* Products */}
-      <div className="px-4 mt-7 space-y-4">
-        <h2 className="px-1 text-xs font-bold uppercase tracking-[0.14em]" style={{ color: t.muted }}>
+      {/* Products: a list on phones, a 2-column grid when there is room */}
+      <section className="px-4 mt-7 space-y-4 @4xl:px-0 @4xl:mt-8 @4xl:space-y-0 @4xl:grid @4xl:grid-cols-2 @4xl:gap-5 @4xl:items-start">
+        <h2 className="px-1 text-xs font-bold uppercase tracking-[0.14em] @4xl:col-span-2 @4xl:px-0 @4xl:mb-1" style={{ color: t.muted }}>
           {store.language === "hindi" ? "मेरे प्रोडक्ट्स" : store.language === "hinglish" ? "Mere products" : "Work with me"}
         </h2>
         {store.products.map((p, idx) => (
@@ -147,15 +150,16 @@ export default function StoreView({ store, edit, onBuy }: Props) {
           <button
             onClick={() => edit.onRegenerate({ part: "new_product" })}
             disabled={!!edit.busy}
-            className="w-full rounded-2xl border-2 border-dashed py-4 text-sm font-semibold disabled:opacity-50"
+            className="w-full rounded-2xl border-2 border-dashed py-4 text-sm font-semibold disabled:opacity-50 @4xl:min-h-40"
             style={{ borderColor: t.muted + "66", color: t.muted }}
           >
             {edit.busy === "new_product" ? <Spinner /> : "+ Suggest another product"}
           </button>
         )}
+      </section>
       </div>
 
-      <p className="text-center text-xs mt-8" style={{ color: t.muted }}>
+      <p className="text-center text-xs mt-8 @4xl:mt-12" style={{ color: t.muted }}>
         Secure payments via UPI & cards · Instant access after purchase
       </p>
     </div>
