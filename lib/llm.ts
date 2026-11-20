@@ -13,16 +13,16 @@ import { z } from "zod";
 type Msg = { system: string; user: string };
 type Provider = { name: string; call: (m: Msg, signal: AbortSignal) => Promise<string> };
 
-const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS || 20000);
+const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS || 28000);
 // Stop starting new attempts after this, so the whole request fits in the 60 s function limit.
-const BUDGET_MS = Number(process.env.LLM_BUDGET_MS || 40000);
+const BUDGET_MS = Number(process.env.LLM_BUDGET_MS || 50000);
 
 function providers(): Provider[] {
   const list: Provider[] = [];
   if (process.env.GEMINI_API_KEY) {
     // Google retires model names over time. Try the configured model, then the
     // "latest" alias, so a retirement never takes the product down.
-    const models = [...new Set([process.env.GEMINI_MODEL || "gemini-3.8-flash", "gemini-3.6-flash", "gemini-flash-latest"])];
+    const models = [...new Set([process.env.GEMINI_MODEL || "gemini-3.6-flash", "gemini-flash-latest", "gemini-3.8-flash"])];
     for (const model of models) list.push({
       name: `gemini:${model}`,
       call: async ({ system, user }, signal) => {

@@ -35,11 +35,11 @@ Without Redis env vars, published pages are kept in memory, which is fine for lo
 
 | Variable | Required | Notes |
 |---|---|---|
-| `GEMINI_API_KEY` | one of the two | Primary provider (`GEMINI_MODEL`, default `gemini-3.8-flash`, falls back to `gemini-flash-latest`) |
+| `GEMINI_API_KEY` | one of the two | Primary provider (`GEMINI_MODEL`, default `gemini-3.6-flash`, falls back to `gemini-flash-latest` then `gemini-3.8-flash`) |
 | `OPENAI_COMPAT_API_KEY` | one of the two | Fallback; any OpenAI-compatible API. Defaults to Groq `openai/gpt-oss-120b` |
 | `OPENAI_COMPAT_BASE_URL`, `OPENAI_COMPAT_MODEL` | no | Point at OpenAI, OpenRouter and so on |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | on Vercel | Upstash Redis for published pages and counters |
-| `LLM_TIMEOUT_MS`, `LLM_BUDGET_MS` | no | Per-attempt timeout (20000) and total AI time budget (40000) |
+| `LLM_TIMEOUT_MS`, `LLM_BUDGET_MS` | no | Per-attempt timeout (28000) and total AI time budget (50000) |
 | `DISABLE_INSTAGRAM` | no | `1` skips the best-effort Instagram read |
 
 No keys are committed. `.env*` is git-ignored.
