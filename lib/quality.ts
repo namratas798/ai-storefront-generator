@@ -51,11 +51,13 @@ const INVENTED = /\b(\d[\d,]*\+?|dozens|hundreds|thousands|lakhs?)\s+(of\s+)?(ha
 
 // Made-up experience ("10+ years", "years of studying").
 const EXPERIENCE = /\b(\d+\+?\s+years|years\s+of\s+\w+|decades?\s+of\s+\w+)/i;
+// Credentials and audience boasts the creator didn't give us ("certified", "award-winning", "5K+ followers").
+const CREDENTIAL = /\b(certified|certification|award[- ]winning|gold medal(?:ist)?|ranked|registered dietitian|\d+(?:\.\d+)?\s*[kKmL]\+?\s+(?:followers|subscribers))\b/i;
 
 export function qualityIssues(store: LlmStore, source = ""): string[] {
   const issues: string[] = [];
   const text = JSON.stringify(store);
-  for (const re of [INVENTED, EXPERIENCE]) {
+  for (const re of [INVENTED, EXPERIENCE, CREDENTIAL]) {
     const claim = text.match(re);
     if (claim && !source.toLowerCase().includes(claim[0].toLowerCase())) {
       issues.push(`Remove the invented claim "${claim[0]}" — the creator never said this. Describe what they do instead.`);

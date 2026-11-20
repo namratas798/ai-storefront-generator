@@ -3,7 +3,7 @@ import { z } from "zod";
 import { LlmCreator as Header, LlmProduct, StoreSchema, type Store } from "@/lib/schema";
 import { generateStructured } from "@/lib/llm";
 import { SYSTEM, regeneratePrompt } from "@/lib/prompts";
-import { finalizeProducts } from "@/lib/quality";
+import { finalizeProducts, qualityIssues } from "@/lib/quality";
 
 export const maxDuration = 60;
 
@@ -23,7 +23,11 @@ export async function POST(req: Request) {
   const user = regeneratePrompt({ store, part, productId, instruction: instruction?.trim() || undefined });
 
   if (part === "bio") {
-    const r = await generateStructured({ system: SYSTEM, user }, Header);
+    const r = await generateStructured({ system: SYSTEM, user }, Header, (h) =>
+      qualityIssues({ inputQuality: "good", creator: h, products: [], theme: "sunrise" }).filter(
+        (i) => !i.includes("entry-level")
+      )
+    );
     if (!r.ok) return fail();
     return NextResponse.json({ status: "ok", creator: r.data });
   }

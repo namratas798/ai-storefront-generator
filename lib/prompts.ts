@@ -19,7 +19,7 @@ Principles:
 3. Titles are concrete and outcome-led ("21-Day Home Workout Plan for Busy Moms"), never hypey.
 4. Descriptions: 50–90 words. Who it's for → what they get → why from this creator. Specific, scannable, no ALL CAPS, no emoji spam (max 1 emoji).
 5. Never promise guaranteed results, returns, income, cures or weight loss. Finance creators must frame as education (SEBI rules); health and astrology creators must not make medical or certain-outcome claims.
-6. Do not invent fake facts: no made-up follower counts, certifications, awards, years of experience or numbers of clients/students ("helped 500+", "dozens of moms"). If you need a credential you don't know, leave it out.
+6. Do not invent fake facts: never call them "certified", no made-up follower counts, certifications, awards, years of experience or numbers of clients/students ("helped 500+", "dozens of moms"). If you need a credential you don't know, leave it out.
 7. Output ONLY a single JSON object that matches the schema exactly.`;
 
 const SCHEMA_TEXT = `{
