@@ -34,9 +34,17 @@ export async function POST(req: Request) {
   const ig = valid && handle ? await readInstagram(handle) : { status: "skipped" as const, profile: null };
   if (ig.status === "not_found" && !desc)
     return needs("handle_not_found", `We couldn't find @${handle} on Instagram. Check the spelling, or just tell us what you do.`);
+  // A bare handle we couldn't read says almost nothing about the creator. Ask for one line
+  // rather than let the model invent a niche.
+  if (!desc && ig.status !== "found")
+    return needs(
+      "handle_unreadable",
+      `We couldn't read @${handle} on Instagram (it may be private). Tell us in a line what you teach, make or talk about.`
+    );
   const igAudience = audienceFromFollowers(ig.profile?.followers);
   if (igAudience) audience = igAudience;
 
+  const thin = desc.split(/\s+/).filter(Boolean).length < 4 && !ig.profile?.bio;
   const result = await generateStructured(
     {
       system: SYSTEM,
@@ -49,7 +57,12 @@ export async function POST(req: Request) {
       }),
     },
     LlmStore,
-    (data) => qualityIssues(data, `${desc} ${ig.profile?.bio ?? ""}`)
+    (data) => [
+      ...qualityIssues(data, `${desc} ${ig.profile?.bio ?? ""}`),
+      ...(thin && data.inputQuality !== "gibberish" && !(data.assumptions ?? []).length
+        ? ['The input was very short: set inputQuality to "vague" and list 2-3 assumptions you made.']
+        : []),
+    ]
   );
 
   if (!result.ok) {
@@ -77,7 +90,9 @@ export async function POST(req: Request) {
     theme: data.theme,
     creator: data.creator!,
     products: finalizeProducts(data.products, audience).sort((a, b) => a.price - b.price), // ladder: entry product first
-    assumptions: data.inputQuality === "vague" ? (data.assumptions ?? []).slice(0, 3) : [],
+    // Very short input is vague by definition, whatever the model graded it.
+    assumptions:
+      data.inputQuality === "vague" || thin ? (data.assumptions ?? []).slice(0, 3) : [],
   };
 
   return NextResponse.json({
