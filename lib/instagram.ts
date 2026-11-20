@@ -64,6 +64,7 @@ export function audienceFromFollowers(f?: string) {
   const m = f.replace(/,/g, "").match(/([\d.]+)([KMkm]?)/);
   if (!m) return null;
   const n = parseFloat(m[1]) * (m[2].toLowerCase() === "k" ? 1e3 : m[2].toLowerCase() === "m" ? 1e6 : 1);
+  if (n < 1000) return "under_1k" as const;
   if (n < 5000) return "under_5k" as const;
   if (n < 20000) return "5k_20k" as const;
   if (n < 100000) return "20k_100k" as const;

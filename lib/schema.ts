@@ -21,10 +21,12 @@ export const FORMAT_LABEL: Record<Format, string> = {
   community: "Community",
 };
 
-export const AUDIENCE = ["under_5k", "5k_20k", "20k_100k", "over_100k"] as const;
+// "under_5k" now means 1K–5K; the key is kept so stores saved earlier still load.
+export const AUDIENCE = ["under_1k", "under_5k", "5k_20k", "20k_100k", "over_100k"] as const;
 export type Audience = (typeof AUDIENCE)[number];
 export const AUDIENCE_LABEL: Record<Audience, string> = {
-  under_5k: "Under 5K",
+  under_1k: "Under 1K",
+  under_5k: "1K–5K",
   "5k_20k": "5K–20K",
   "20k_100k": "20K–100K",
   over_100k: "100K+",
@@ -40,7 +42,7 @@ export type Theme = (typeof THEMES)[number];
 export const GenerateInput = z.object({
   handle: z.string().max(80).optional().default(""),
   description: z.string().max(600).optional().default(""),
-  audience: z.enum(AUDIENCE).optional().default("5k_20k"),
+  audience: z.enum(AUDIENCE).optional().default("under_5k"),
   language: z.enum(LANGUAGES).optional().default("english"),
 });
 export type GenerateInput = z.infer<typeof GenerateInput>;

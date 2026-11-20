@@ -18,6 +18,7 @@ export const PRICE_BANDS: Record<Format, { min: number; max: number; unit?: stri
 
 // Smaller audiences sit at the bottom of the band; big audiences can stretch to the top.
 const AUDIENCE_WINDOW: Record<Audience, [number, number]> = {
+  under_1k: [0, 0.3],
   under_5k: [0, 0.45],
   "5k_20k": [0, 0.65],
   "20k_100k": [0.1, 0.85],

@@ -77,7 +77,7 @@ ${today()}
 ${igBlock}
 Creator's own description: """${description || "(none given)"}"""
 Audience size: ${AUDIENCE_LABEL[audience]} followers
-
+${audience === "under_1k" ? "This creator has a very small audience: favour personal, high-trust formats (1:1 sessions, small live workshops) and low entry prices. Avoid communities that need many members to feel alive.\n" : ""}
 Pricing guardrails for this audience size (INR; stay inside these):
 ${pricingGuide(audience)}
 

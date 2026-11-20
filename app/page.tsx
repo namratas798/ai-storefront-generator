@@ -6,7 +6,7 @@ import { AUDIENCE, AUDIENCE_LABEL, THEMES, type Audience, type Language, type St
 import { THEME_STYLES } from "@/lib/themes";
 
 type Step = "input" | "generating" | "edit" | "published";
-type Input = { handle: string; description: string; audience: Audience; language: Language };
+type Input = { handle: string; description: string; audience: Audience | null; language: Language };
 type Draft = { step: Step; input: Input; store: Store | null; slug?: string; editKey?: string };
 
 const DRAFT_KEY = "sf_draft_v1";
@@ -23,12 +23,13 @@ const CLIENT_TIMEOUT_MS = 58000;
 /** A real, AI-generated store published on this site, shown to people who want to see the result first. */
 const EXAMPLE_SLUG = process.env.NEXT_PUBLIC_EXAMPLE_SLUG || "example-creator";
 
-const emptyInput: Input = { handle: "", description: "", audience: "5k_20k", language: "english" };
+// No follower range pre-selected: creators know their count, and a guess would skew prices.
+const emptyInput: Input = { handle: "", description: "", audience: null, language: "english" };
 
 export default function Home() {
   const [draft, setDraft] = useState<Draft>({ step: "input", input: emptyInput, store: null });
   const [loaded, setLoaded] = useState(false);
-  const [notice, setNotice] = useState<{ kind: "info" | "warn" | "error"; text: string } | null>(null);
+  const [notice, setNotice] = useState<{ kind: "info" | "warn" | "error"; text: string; at?: "followers" } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [undo, setUndo] = useState<Store | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -69,6 +70,11 @@ export default function Home() {
     if (!input.handle.trim() && !input.description.trim()) {
       setNotice({ kind: "warn", text: "Add your Instagram handle or a line about what you do." });
       descRef.current?.focus();
+      return;
+    }
+    if (!input.audience) {
+      setNotice({ kind: "warn", text: "Pick how many followers you have. It decides your prices.", at: "followers" });
+      document.getElementById("followers")?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     setNotice(null);
@@ -181,6 +187,7 @@ export default function Home() {
           descRef={descRef}
           hasDraft={!!draft.store}
           onResume={() => set({ step: "edit" })}
+          onPickAudience={() => setNotice((n) => (n?.at === "followers" ? null : n))}
         />
       )}
       {draft.step === "generating" && <Generating />}
@@ -410,14 +417,16 @@ function InputScreen({
   descRef,
   hasDraft,
   onResume,
+  onPickAudience,
 }: {
   input: Input;
   setInput: (p: Partial<Input>) => void;
   onSubmit: () => void;
-  notice: { kind: "info" | "warn" | "error"; text: string } | null;
+  notice: { kind: "info" | "warn" | "error"; text: string; at?: "followers" } | null;
   descRef: React.RefObject<HTMLTextAreaElement | null>;
   hasDraft: boolean;
   onResume: () => void;
+  onPickAudience: () => void;
 }) {
   const canSubmit = input.handle.trim() || input.description.trim();
   return (
@@ -482,7 +491,9 @@ function InputScreen({
           </div>
         </Field>
 
-        {notice && <Banner notice={notice} inline onRetry={notice.kind === "error" ? onSubmit : undefined} />}
+        {notice && notice.at !== "followers" && (
+          <Banner notice={notice} inline onRetry={notice.kind === "error" ? onSubmit : undefined} />
+        )}
 
         <Field label="Instagram handle" optional hint="We'll add it to your page and try to read your follower count.">
           <div className="flex items-center rounded-2xl border border-[var(--line)] focus-within:border-[var(--brand)] focus-within:ring-4 ring-[var(--brand-soft)]">
@@ -500,10 +511,15 @@ function InputScreen({
           </div>
         </Field>
 
-        <Field label="How many followers do you have?" hint="This decides how we price. Not sure? Leave it.">
-          <div className="grid grid-cols-4 gap-2">
+        <Field label="How many followers do you have?" hint="On your main platform. This decides how we price.">
+          {notice?.at === "followers" && (
+            <div className="mb-2">
+              <Banner notice={notice} inline />
+            </div>
+          )}
+          <div id="followers" className="grid grid-cols-3 gap-2">
             {AUDIENCE.map((a) => (
-              <Chip key={a} active={input.audience === a} onClick={() => setInput({ audience: a })}>
+              <Chip key={a} active={input.audience === a} onClick={() => { setInput({ audience: a }); onPickAudience(); }}>
                 {AUDIENCE_LABEL[a]}
               </Chip>
             ))}
@@ -815,7 +831,7 @@ function Banner({
   inline,
   onRetry,
 }: {
-  notice: { kind: "info" | "warn" | "error"; text: string };
+  notice: { kind: "info" | "warn" | "error"; text: string; at?: "followers" };
   onClose?: () => void;
   inline?: boolean;
   onRetry?: () => void;
