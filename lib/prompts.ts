@@ -39,12 +39,20 @@ const SCHEMA_TEXT = `{
       "description": string,             // 50-90 words
       "deliverables": string[],          // 3 short bullets of what the buyer gets
       "price": integer,                  // INR, inside the guardrail for the format
-      "priceRationale": string,          // 1-2 sentences to the creator: why this price works for their audience
+      "priceRationale": string,          // 1-2 sentences to the creator, in plain words: why this price works for their buyers. Never mention guardrails, bands, ranges or follower brackets.
       "ctaLabel": string                 // 2-4 words, e.g. "Get the plan", "Book a call"
     }
   ],
   "theme": ${THEMES.map((t) => `"${t}"`).join(" | ")}   // sunrise = warm/lifestyle/food/fashion, mint = health/fitness/education, midnight = finance/tech/design/astrology
 }`;
+
+/** Models don't know today's date; finance and exam creators need the right year. */
+function today() {
+  const d = new Date();
+  const fyStart = d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1;
+  const date = d.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" });
+  return `Today is ${date}. The current Indian financial year is FY ${fyStart}-${String(fyStart + 1).slice(2)}. Never mention an older year as current.`;
+}
 
 export function storePrompt(args: {
   handle: string;
@@ -64,6 +72,7 @@ export function storePrompt(args: {
       : "No Instagram handle given.";
 
   return `Create a ready-to-publish storefront for this creator.
+${today()}
 
 ${igBlock}
 Creator's own description: """${description || "(none given)"}"""
@@ -100,6 +109,7 @@ ${JSON.stringify(
   1
 )}
 Audience size: ${AUDIENCE_LABEL[store.audience]}
+${today()}
 Language: ${LANGUAGE_RULE[store.language]}
 ${instruction ? `The creator asked: """${instruction}"""` : "The creator wants a fresh alternative — make it noticeably different, not a rephrase."}`;
 
@@ -126,5 +136,5 @@ Pricing guardrails (INR):
 ${pricingGuide(store.audience)}
 
 Return JSON for one product:
-{ "format": ${FORMATS.map((f) => `"${f}"`).join(" | ")}, "title": string, "description": string (50-90 words), "deliverables": string[3], "price": integer, "priceRationale": string, "ctaLabel": string }`;
+{ "format": ${FORMATS.map((f) => `"${f}"`).join(" | ")}, "title": string, "description": string (50-90 words), "deliverables": string[3], "price": integer, "priceRationale": string (plain words to the creator; never mention bands or ranges), "ctaLabel": string }`;
 }
