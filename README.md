@@ -35,7 +35,7 @@ Without Redis env vars, published pages are kept in memory, which is fine for lo
 
 | Variable | Required | Notes |
 |---|---|---|
-| `GEMINI_API_KEY` | one of the two | Primary provider (`GEMINI_MODEL`, default `gemini-2.5-flash`) |
+| `GEMINI_API_KEY` | one of the two | Primary provider (`GEMINI_MODEL`, default `gemini-3.8-flash`, falls back to `gemini-flash-latest`) |
 | `OPENAI_COMPAT_API_KEY` | one of the two | Fallback; any OpenAI-compatible API. Defaults to Groq `llama-3.3-70b-versatile` |
 | `OPENAI_COMPAT_BASE_URL`, `OPENAI_COMPAT_MODEL` | no | Point at OpenAI, OpenRouter and so on |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | on Vercel | Upstash Redis for published pages and counters |
@@ -63,4 +63,4 @@ lib/instagram.ts          Best-effort public profile meta read (never required)
 
 ## Stack and tools
 
-Next.js 16 (App Router), React 19, Tailwind 4, Zod 4, Upstash Redis. Gemini 2.5 Flash with Groq Llama 3.3 70B as fallback. Built with Claude Code as the pair programmer: scaffolding, components, edge-case test scripts and mobile screenshot checks with Playwright.
+Next.js 16 (App Router), React 19, Tailwind 4, Zod 4, Upstash Redis. Gemini Flash with Groq Llama 3.3 70B as fallback. Built with Claude Code as the pair programmer: scaffolding, components, edge-case test scripts and mobile screenshot checks with Playwright.

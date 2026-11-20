@@ -18,8 +18,10 @@ const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS || 22000);
 function providers(): Provider[] {
   const list: Provider[] = [];
   if (process.env.GEMINI_API_KEY) {
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    list.push({
+    // Google retires model names over time. Try the configured model, then the
+    // "latest" alias, so a retirement never takes the product down.
+    const models = [...new Set([process.env.GEMINI_MODEL || "gemini-3.8-flash", "gemini-flash-latest"])];
+    for (const model of models) list.push({
       name: `gemini:${model}`,
       call: async ({ system, user }, signal) => {
         const res = await fetch(
@@ -38,8 +40,8 @@ function providers(): Provider[] {
                 responseMimeType: "application/json",
                 temperature: 0.8,
                 maxOutputTokens: 4096,
-                // Flash models: skip "thinking" to keep latency low for a phone user.
-                ...(model.includes("flash") ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+                // 2.5 Flash: skip "thinking" to keep latency low for a phone user.
+                ...(model.startsWith("gemini-2.5-flash") ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
               },
             }),
           }
