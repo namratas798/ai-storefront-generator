@@ -39,7 +39,7 @@ Without Redis env vars, published pages are kept in memory, which is fine for lo
 | `OPENAI_COMPAT_API_KEY` | one of the two | Fallback; any OpenAI-compatible API. Defaults to Groq `llama-3.3-70b-versatile` |
 | `OPENAI_COMPAT_BASE_URL`, `OPENAI_COMPAT_MODEL` | no | Point at OpenAI, OpenRouter and so on |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | on Vercel | Upstash Redis for published pages and counters |
-| `LLM_TIMEOUT_MS` | no | Per-attempt timeout, default 22000 |
+| `LLM_TIMEOUT_MS`, `LLM_BUDGET_MS` | no | Per-attempt timeout (25000) and total AI time budget (40000) |
 | `DISABLE_INSTAGRAM` | no | `1` skips the best-effort Instagram read |
 
 No keys are committed. `.env*` is git-ignored.
