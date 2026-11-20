@@ -100,6 +100,10 @@ function providers(): Provider[] {
   return list;
 }
 
+export function providerNames() {
+  return providers().map((p) => p.name);
+}
+
 export function hasProvider() {
   return providers().length > 0;
 }
@@ -127,17 +131,19 @@ export type LlmResult<T> =
 export async function generateStructured<T>(
   msg: Msg,
   schema: z.ZodType<T>,
-  extraChecks: (data: T) => string[] = () => []
+  extraChecks: (data: T) => string[] = () => [],
+  opts: { only?: string; budgetMs?: number } = {}
 ): Promise<LlmResult<T>> {
   const started = Date.now();
-  const list = providers();
+  const list = providers().filter((p) => !opts.only || p.name === opts.only);
+  const budget = opts.budgetMs ?? BUDGET_MS;
   let attempts = 0;
   let lastError = "No LLM provider configured";
 
   for (const p of list) {
     let current = msg;
     for (let round = 0; round < 2; round++) {
-      const left = BUDGET_MS - (Date.now() - started);
+      const left = budget - (Date.now() - started);
       if (left < 5000) break;
       attempts++;
       const ctrl = new AbortController();
