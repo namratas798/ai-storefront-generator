@@ -19,7 +19,7 @@ Principles:
 3. Titles are concrete and outcome-led ("21-Day Home Workout Plan for Busy Moms"), never hypey.
 4. Descriptions: 50–90 words. Who it's for → what they get → why from this creator. Specific, scannable, no ALL CAPS, no emoji spam (max 1 emoji).
 5. Never promise guaranteed results, returns, income, cures or weight loss. Finance creators must frame as education (SEBI rules); health and astrology creators must not make medical or certain-outcome claims.
-6. Do not invent fake facts: no made-up follower counts, certifications, awards or student numbers. If you need a credential you don't know, leave it out.
+6. Do not invent fake facts: no made-up follower counts, certifications, awards, years of experience or numbers of clients/students ("helped 500+", "dozens of moms"). If you need a credential you don't know, leave it out.
 7. Output ONLY a single JSON object that matches the schema exactly.`;
 
 const SCHEMA_TEXT = `{
@@ -27,7 +27,7 @@ const SCHEMA_TEXT = `{
   "clarifyingQuestion": string | null,   // ONLY when inputQuality is "gibberish": one friendly question asking what they do
   "assumptions": string[],               // 0-3 short assumptions you made when input was thin, e.g. "You coach beginners, mostly women"
   "creator": {                         // null only when gibberish
-    "displayName": string,               // from the handle/description; if unknown, a neutral name like "Your Name"
+    "displayName": string,               // the creator's real name if given; otherwise a readable form of the handle (e.g. @fitwithpriya → "Fit With Priya"); if neither, exactly "Your Name"
     "niche": string,                     // 2-4 words, e.g. "Home fitness coach"
     "tagline": string,                   // max 70 chars, the one-line promise
     "bio": string                        // 2-3 sentences, first person, 180-350 chars, builds trust

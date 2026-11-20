@@ -46,9 +46,16 @@ const RISKY = [
   /\bget\s+rich\s+quick\b/i,
 ];
 
-export function qualityIssues(store: LlmStore): string[] {
+// Made-up track records ("helped 500+ students", "guided dozens of moms") that the creator never gave us.
+const INVENTED = /\b(\d[\d,]*\+?|dozens|hundreds|thousands|lakhs?)\s+(of\s+)?(happy\s+|satisfied\s+)?(clients|students|moms|mothers|women|learners|customers|followers|families|professionals)\b/i;
+
+export function qualityIssues(store: LlmStore, source = ""): string[] {
   const issues: string[] = [];
   const text = JSON.stringify(store);
+  const claim = text.match(INVENTED);
+  if (claim && !source.toLowerCase().includes(claim[0].toLowerCase())) {
+    issues.push(`Remove the invented track record "${claim[0]}" — the creator never said this. Describe what they do instead.`);
+  }
   for (const r of RISKY) {
     const m = text.match(r);
     if (m) issues.push(`Remove the risky claim "${m[0]}" — rephrase without promising outcomes.`);

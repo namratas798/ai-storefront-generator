@@ -49,7 +49,7 @@ export async function POST(req: Request) {
       }),
     },
     LlmStore,
-    qualityIssues
+    (data) => qualityIssues(data, `${desc} ${ig.profile?.bio ?? ""}`)
   );
 
   if (!result.ok) {
