@@ -158,7 +158,13 @@ export default function Home() {
   if (!loaded) return <div className="min-h-dvh" />;
 
   return (
-    <main className="mx-auto max-w-md min-h-dvh bg-white shadow-[0_0_40px_rgba(0,0,0,0.04)] relative">
+    // Phone-first. On laptops the same layout sits in a frame instead of being stretched.
+    <div className="lg:min-h-dvh lg:bg-[linear-gradient(135deg,#f1ecff_0%,#f7f6fb_45%,#fff3ea_100%)] lg:flex lg:items-start lg:justify-center lg:gap-14 lg:px-10 lg:py-10">
+    <main
+      className={`mx-auto lg:mx-0 w-full max-w-md min-h-dvh bg-white shadow-[0_0_40px_rgba(0,0,0,0.04)] relative ${
+        draft.step === "input" ? "lg:min-h-0 lg:rounded-3xl lg:shadow-xl" : "lg:shadow-xl"
+      }`}
+    >
       {draft.step === "input" && (
         <InputScreen
           input={draft.input}
@@ -191,7 +197,10 @@ export default function Home() {
               <span className="block mt-1">Tap any text below to fix it.</span>
             </div>
           )}
-          <p className="text-center text-[12px] text-[var(--soft)] mt-3 mb-1">✏️ Tap any text to edit · ↻ to get a new version</p>
+          <p className="text-center text-[12px] text-[var(--soft)] mt-3 mb-1">
+            ✏️ Tap any text to edit · ↻ to get a new version
+            <span className="hidden lg:block mt-0.5">This is how buyers see it on their phone.</span>
+          </p>
           <div className="mx-3 rounded-3xl overflow-hidden border border-[var(--line)]">
             <StoreView
               store={draft.store}
@@ -266,6 +275,45 @@ export default function Home() {
         </div>
       )}
     </main>
+    {draft.step === "input" && <DesktopShowcase />}
+    </div>
+  );
+}
+
+/** Laptop-only right column: the result next to the form, so a reviewer sees both at a glance. */
+function DesktopShowcase() {
+  return (
+    <aside className="hidden lg:flex flex-col items-center sticky top-10 w-[340px] shrink-0" aria-label="Example store">
+      <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-[var(--soft)]">What you get</p>
+      <div className="mt-3 w-[300px] h-[600px] rounded-[44px] bg-[#16131f] p-[10px] shadow-2xl">
+        <div className="w-full h-full rounded-[34px] overflow-hidden bg-white relative">
+          <iframe
+            src={`/${EXAMPLE_SLUG}`}
+            title="Example store made by AI"
+            loading="lazy"
+            className="absolute top-0 left-0 border-0 origin-top-left"
+            style={{ width: 390, height: 754, transform: "scale(0.718)" }}
+          />
+        </div>
+      </div>
+      <ol className="mt-6 w-full space-y-3 text-[14px]">
+        {[
+          ["Describe yourself", "One line about what you do."],
+          ["Get your store", "A bio and 2–4 products, priced for your audience."],
+          ["Edit and share", "One link for WhatsApp and Instagram."],
+        ].map(([title, body], i) => (
+          <li key={title} className="flex gap-3">
+            <span className="w-7 h-7 shrink-0 grid place-items-center rounded-full bg-[var(--brand)] text-white text-[13px] font-bold">
+              {i + 1}
+            </span>
+            <span className="leading-snug">
+              <b>{title}</b>
+              <span className="block text-[var(--soft)]">{body}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </aside>
   );
 }
 
@@ -315,7 +363,7 @@ function InputScreen({
 }) {
   const canSubmit = input.handle.trim() || input.description.trim();
   return (
-    <div className="px-5 pt-8 pb-32">
+    <div className="px-5 pt-8 pb-32 lg:pb-8 lg:px-8">
       <div className="flex items-center justify-between gap-3">
         <div className="inline-flex items-center gap-2 text-[12px] font-bold text-[var(--brand)] bg-[var(--brand-soft)] px-3 py-1 rounded-full">
           ✨ AI Storefront
@@ -414,7 +462,7 @@ function InputScreen({
           </div>
         </Field>
 
-        <BottomBar>
+        <BottomBar inlineOnDesktop>
           <button
             type="submit"
             className="w-full py-4 rounded-2xl font-bold text-white text-[16px] bg-[var(--brand)] disabled:opacity-40 shadow-[0_8px_24px_rgba(109,74,255,0.35)]"
@@ -426,7 +474,7 @@ function InputScreen({
       </form>
 
       {/* How it works: for people arriving cold, e.g. from the link on a published store. */}
-      <section className="mt-10 rounded-2xl bg-[#f7f6fb] p-4" aria-label="How it works">
+      <section className="mt-10 rounded-2xl bg-[#f7f6fb] p-4 lg:hidden" aria-label="How it works">
         <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-[var(--soft)]">How it works</h2>
         <ol className="mt-3 space-y-3">
           {[
@@ -709,9 +757,13 @@ function Banner({
   );
 }
 
-function BottomBar({ children }: { children: React.ReactNode }) {
+function BottomBar({ children, inlineOnDesktop }: { children: React.ReactNode; inlineOnDesktop?: boolean }) {
   return (
-    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-white/95 backdrop-blur border-t border-[var(--line)] px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] flex gap-3">
+    <div
+      className={`fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-30 bg-white/95 backdrop-blur border-t border-[var(--line)] px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] flex gap-3 ${
+        inlineOnDesktop ? "lg:static lg:translate-x-0 lg:max-w-none lg:bg-transparent lg:border-0 lg:p-0 lg:mt-2" : ""
+      }`}
+    >
       {children}
     </div>
   );

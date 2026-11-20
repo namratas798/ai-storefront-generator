@@ -20,7 +20,9 @@ export default function PublicStore({ store }: { store: PublicStoreData }) {
     } catch {}
     setOwner(key);
     // Count views from real visitors only (not the creator checking their own page).
-    if (!key) beacon({ slug: store.slug, event: "view" });
+    // Skip the creator's own visits and the example preview embedded on the home page.
+    const embedded = window.self !== window.top;
+    if (!key && !embedded) beacon({ slug: store.slug, event: "view" });
   }, [store.slug]);
 
   function buy(p: Product) {
@@ -47,16 +49,23 @@ export default function PublicStore({ store }: { store: PublicStoreData }) {
   const isExample = store.slug === (process.env.NEXT_PUBLIC_EXAMPLE_SLUG || "example-creator");
 
   return (
-    <main className="mx-auto max-w-md min-h-dvh shadow-[0_0_40px_rgba(0,0,0,0.06)]" style={{ background: t.bg }}>
+    // Phones: full-screen page. Laptops: the theme fills the screen and the store is a centred card,
+    // the usual link-in-bio look on desktop.
+    <div className="min-h-dvh lg:py-10" style={{ background: t.bg }}>
+    <div className="hidden lg:block fixed inset-x-0 top-0 h-72 opacity-25 pointer-events-none" style={{ background: t.hero }} />
+    <main
+      className="relative mx-auto max-w-md min-h-dvh lg:min-h-0 lg:rounded-3xl lg:overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.06)] lg:shadow-2xl"
+      style={{ background: t.bg }}
+    >
       {isExample && (
         <div className="sticky top-0 z-30 bg-[#16131f] text-white text-[13px] px-4 py-2.5 flex items-center gap-3">
           <span className="flex-1">Example store, made by AI from one line of description.</span>
-          <a href="/" className="font-bold underline underline-offset-2 whitespace-nowrap">Make yours →</a>
+          <a href="/" target="_top" className="font-bold underline underline-offset-2 whitespace-nowrap">Make yours →</a>
         </div>
       )}
       <StoreView store={store} onBuy={buy} />
       <footer className="text-center text-[11px] pb-8" style={{ color: t.muted }}>
-        <a href="/" className="underline underline-offset-2">Make your own store in a minute ✨</a>
+        <a href="/" target="_top" className="underline underline-offset-2">Make your own store in a minute ✨</a>
       </footer>
 
       {owner && (
@@ -84,6 +93,7 @@ export default function PublicStore({ store }: { store: PublicStoreData }) {
         </div>
       )}
     </main>
+    </div>
   );
 }
 
