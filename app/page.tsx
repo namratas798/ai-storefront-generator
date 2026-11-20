@@ -168,7 +168,7 @@ export default function Home() {
         draft.step === "input"
           ? "lg:mx-0 lg:max-w-xl lg:min-h-0 lg:bg-transparent lg:shadow-none"
           : draft.step === "edit"
-            ? "lg:max-w-6xl lg:shadow-xl"
+            ? "lg:max-w-none lg:shadow-none"
             : "lg:max-w-3xl lg:min-h-0 lg:my-10 lg:rounded-3xl lg:shadow-xl"
       }`}
     >
@@ -213,6 +213,8 @@ export default function Home() {
               </div>
             }
           />
+          {/* Toolbar spans the window; the page itself stays at a readable width. */}
+          <div className="lg:max-w-[1200px] lg:mx-auto">
           {notice && <Banner notice={notice} onClose={() => setNotice(null)} onRetry={notice.kind === "error" ? generate : undefined} />}
           {draft.store.assumptions.length > 0 && (
             <div className="mx-4 mt-3 rounded-xl bg-amber-50 border border-amber-200 p-3 text-[13px] text-amber-900">
@@ -236,6 +238,7 @@ export default function Home() {
             />
           </div>
           <div className="h-28 lg:h-10" />
+          </div>
           <BottomBar hideOnDesktop>
             <button
               onClick={() => setConfirmAll(true)}
@@ -610,7 +613,8 @@ function EditorHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-[var(--line)] px-4 lg:px-6 py-3 flex items-center gap-3">
+    <div className="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-[var(--line)]">
+    <div className="px-4 lg:px-6 py-3 flex items-center gap-3 lg:max-w-[1200px] lg:mx-auto">
       <button onClick={onBack} className="text-sm font-semibold text-[var(--soft)]" aria-label="Back to details">
         ← Details
       </button>
@@ -629,6 +633,7 @@ function EditorHeader({
         ))}
       </div>
       {actions}
+    </div>
     </div>
   );
 }
