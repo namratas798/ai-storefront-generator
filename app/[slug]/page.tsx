@@ -30,6 +30,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function Page({ params }: Params) {
   const s = await load((await params).slug);
   if (!s) notFound();
-  const { editKey: _k, ...publicStore } = s; // never ship the edit key to visitors
+  // Never ship the edit key or delivery links to visitors: buyers get those only after paying.
+  const { editKey: _k, ...rest } = s;
+  const publicStore = { ...rest, products: rest.products.map(({ delivery: _d, ...p }) => p) };
   return <PublicStore store={publicStore} />;
 }

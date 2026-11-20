@@ -116,7 +116,15 @@ export default function Home() {
       if (!d.store) return d;
       let s = d.store;
       if (p.part === "bio") s = { ...s, creator: res.creator };
-      else if (p.part === "product") s = { ...s, products: s.products.map((x) => (x.id === p.productId ? res.product : x)) };
+      else if (p.part === "product")
+        s = {
+          ...s,
+          products: s.products.map((x) =>
+            x.id === p.productId
+              ? { ...res.product, delivery: res.product.format === x.format ? x.delivery : undefined }
+              : x
+          ),
+        };
       else s = { ...s, products: [...s.products, res.product].slice(0, 4) };
       return { ...d, store: s };
     });
@@ -497,6 +505,7 @@ function Published({
   const [stats, setStats] = useState<{ views: number; clicks: number } | null>(null);
   const url = typeof window !== "undefined" ? `${window.location.origin}/${slug}` : `/${slug}`;
   const share = `Check out my new store — ${store.creator.tagline} 👉 ${url}`;
+  const missing = store.products.filter((p) => !p.delivery?.trim()).length;
 
   async function loadStats() {
     const r = await fetch(`/api/stats?slug=${slug}&key=${editKey}`).then((r) => r.json()).catch(() => null);
@@ -553,6 +562,18 @@ function Published({
       >
         {copied === "bio" ? "Copied — paste it in Instagram → Edit profile → Links" : "Copy link for Instagram bio"}
       </button>
+
+      {missing > 0 && (
+        <div className="mt-6 rounded-2xl bg-amber-50 border border-amber-200 p-4 text-[13.5px] text-amber-900">
+          <b>
+            {missing === 1 ? "1 product has" : `${missing} products have`} no delivery link yet.
+          </b>{" "}
+          That's fine for testing interest, but add {missing === 1 ? "it" : "them"} before you start selling so buyers get what they paid for.
+          <button onClick={onEdit} className="block mt-2 font-bold underline underline-offset-2">
+            Add delivery links
+          </button>
+        </div>
+      )}
 
       <div className="mt-8 rounded-2xl bg-[#f7f6fb] p-4">
         <div className="flex items-center justify-between">

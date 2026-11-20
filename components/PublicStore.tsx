@@ -28,8 +28,13 @@ export default function PublicStore({ store }: { store: PublicStoreData }) {
     setPicked(p);
   }
 
-  function edit() {
-    const { slug, publishedAt: _a, updatedAt: _b, ...rest } = store;
+  async function edit() {
+    const { slug, publishedAt: _a, updatedAt: _b, ...publicRest } = store;
+    // The public page has no delivery links, so load the owner's full copy before editing.
+    const full = await fetch(`/api/store?slug=${encodeURIComponent(slug)}&key=${encodeURIComponent(owner ?? "")}`)
+      .then((r) => r.json())
+      .catch(() => null);
+    const rest = full?.status === "ok" ? full.store : publicRest;
     try {
       localStorage.setItem(
         "sf_draft_v1",

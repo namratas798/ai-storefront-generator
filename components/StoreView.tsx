@@ -26,6 +26,29 @@ type Props = {
 
 const TWEAKS = ["Shorter", "More premium", "More friendly", "In Hinglish"];
 
+/** What the creator hands over after a sale, worded per format. */
+const DELIVERY: Record<Product["format"], { label: string; placeholder: string }> = {
+  ebook: { label: "Link to your e-book", placeholder: "Google Drive or Dropbox link to the PDF" },
+  template_pack: { label: "Link to your templates", placeholder: "Canva, Notion or Google Drive link" },
+  recorded_course: { label: "Link to your course videos", placeholder: "Unlisted YouTube playlist or Drive folder" },
+  cohort_course: { label: "Joining link for the cohort", placeholder: "WhatsApp group invite or Zoom/Meet link" },
+  workshop: { label: "Joining link for the workshop", placeholder: "Zoom or Google Meet link" },
+  one_on_one: { label: "How buyers book the call", placeholder: "Calendly / Cal.com link or WhatsApp number" },
+  community: { label: "Invite link to your community", placeholder: "WhatsApp or Telegram group invite link" },
+};
+
+/** A web link, or a phone number (for WhatsApp bookings). */
+export function isDeliveryValue(v: string) {
+  const s = v.trim();
+  if (/^\+?[\d\s-]{10,15}$/.test(s)) return true;
+  try {
+    const u = new URL(/^https?:\/\//i.test(s) ? s : `https://${s}`);
+    return u.hostname.includes(".");
+  } catch {
+    return false;
+  }
+}
+
 export default function StoreView({ store, edit, onBuy }: Props) {
   const t = THEME_STYLES[store.theme];
   const c = store.creator;
@@ -158,6 +181,8 @@ function ProductCard({
   const [open, setOpen] = useState(false);
   const [why, setWhy] = useState(false);
   const range = priceRange(p.format, store.audience);
+  const suggested = p.suggestedPrice ?? p.price;
+  const deliveryOk = !p.delivery || isDeliveryValue(p.delivery);
   const unit = PRICE_BANDS[p.format].unit ?? "";
   const long = p.description.length > 200;
   const isEdit = !!edit;
@@ -284,8 +309,9 @@ function ProductCard({
 
         {isEdit && (
           <div className="mt-3 text-[13px]">
+            {/* The reason explains the AI's suggested price, so the label stays on that price. */}
             <button onClick={() => setWhy(!why)} className="font-semibold underline underline-offset-2" style={{ color: t.accent }}>
-              Why {formatINR(p.price)}?
+              Why {formatINR(suggested)}?
             </button>
             {(p.price < range.min * 0.5 || p.price > range.max * 1.5) && p.price > 0 && (
               <span className="ml-2" style={{ color: "#c2410c" }}>
@@ -299,8 +325,47 @@ function ProductCard({
                   Typical for {FORMAT_LABEL[p.format].toLowerCase()} at your audience size: {formatINR(range.min)}–{formatINR(range.max)}
                   {unit}
                 </div>
+                {p.price !== suggested && (
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    <span>
+                      You changed it to <b>{formatINR(p.price)}</b>.
+                    </span>
+                    <button
+                      onClick={() => setProduct(p.id, { price: suggested })}
+                      className="px-2.5 py-1 rounded-full font-semibold border"
+                      style={{ borderColor: t.muted + "66" }}
+                    >
+                      Use {formatINR(suggested)}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
+
+            {/* What the buyer receives. Kept private: never shown on the public page. */}
+            <label className="block mt-4">
+              <span className="font-semibold" style={{ color: t.text }}>
+                {DELIVERY[p.format].label}
+              </span>
+              <input
+                value={p.delivery ?? ""}
+                onChange={(e) => setProduct(p.id, { delivery: e.target.value.slice(0, 500) })}
+                placeholder={DELIVERY[p.format].placeholder}
+                inputMode="url"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                className="mt-1.5 w-full rounded-xl px-3 py-2.5 text-[14px] outline-none border bg-white text-[#16131f]"
+                style={{ borderColor: deliveryOk ? t.muted + "55" : "#c2410c" }}
+              />
+              <span className="block mt-1.5" style={{ color: !p.delivery ? "#c2410c" : deliveryOk ? t.muted : "#c2410c" }}>
+                {!p.delivery
+                  ? "⚠ Add this before you start selling. You can publish without it to test demand."
+                  : deliveryOk
+                    ? "✓ Private. Buyers get this only after they pay."
+                    : "This doesn't look like a link or phone number. Check it before you start selling."}
+              </span>
+            </label>
           </div>
         )}
       </Block>

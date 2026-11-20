@@ -81,7 +81,13 @@ export const LlmStore = z
 export type LlmStore = z.infer<typeof LlmStore>;
 
 /* ---------- What we store and render ---------- */
-export type Product = z.infer<typeof LlmProduct> & { id: string };
+export type Product = z.infer<typeof LlmProduct> & {
+  id: string;
+  /** The AI's price after guardrails. "Why ₹X?" explains this number, even if the creator edits the price. */
+  suggestedPrice?: number;
+  /** What the buyer receives: a file/booking/joining link or WhatsApp number. Private, never shown publicly. */
+  delivery?: string;
+};
 
 export type Store = {
   handle: string;
@@ -115,6 +121,8 @@ export const StoreSchema = z.object({
         price: z.number().int().min(0).max(200000),
         priceRationale: z.string().max(400),
         ctaLabel: z.string().max(30),
+        suggestedPrice: z.number().int().min(0).max(200000).optional(),
+        delivery: z.string().max(500).optional(),
       })
     )
     .min(1)

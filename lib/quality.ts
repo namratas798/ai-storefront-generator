@@ -94,6 +94,7 @@ export function finalizeProducts(
       ...p,
       id: crypto.randomUUID().slice(0, 8),
       price,
+      suggestedPrice: price,
       priceRationale,
       title: p.title.trim(),
       description: p.description.trim(),
