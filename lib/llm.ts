@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 /**
- * Minimal provider layer. Two providers, tried in order:
- *  1. Google Gemini (native REST, JSON mode)
- *  2. Any OpenAI-compatible API (Groq by default) — automatic fallback
+ * Minimal provider layer. Providers, tried in order:
+ *  1. Any OpenAI-compatible API (Groq gpt-oss-120b by default) — fastest, primary when set
+ *  2. Google Gemini (native REST, JSON mode), several models — automatic fallback
  *
  * Every call: timeout → JSON parse → zod validation → custom quality checks.
  * If validation fails we send ONE repair request with the exact errors, then move on to the
@@ -93,10 +93,11 @@ function providers(): Provider[] {
       },
     });
   }
-  // Order: primary Gemini model first, then the fast backup provider, then other Gemini models.
-  // A slow or overloaded Gemini must not use up the time budget before the backup gets a turn.
+  // Order: the fast provider (Groq) first, Gemini models as fallback. In testing, Gemini's free
+  // tier was often overloaded (503) or slower than 25 s; Groq answered in under a second.
+  // Set AI_PRIMARY=gemini to put Gemini first instead.
   const compat = list.findIndex((p) => p.name.startsWith("openai-compat"));
-  if (compat > 1) list.splice(1, 0, ...list.splice(compat, 1));
+  if (compat > 0 && process.env.AI_PRIMARY !== "gemini") list.unshift(...list.splice(compat, 1));
   return list;
 }
 
