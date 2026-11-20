@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource/noto-sans-devanagari/400.css";
+@import "@fontsource/noto-sans-devanagari/600.css";
+
+:root {
+  --font: "Plus Jakarta Sans Variable", "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ink: #16131f;
+  --soft: #6b6780;
+  --line: #e8e5f0;
+  --brand: #6d4aff;
+  --brand-soft: #efeaff;
+}
+
+html,
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: #f7f6fb;
+}
+
+@layer components {
+textarea.editable {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+textarea.editable {
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  border: 1px dashed transparent;
+  border-radius: 8px;
+  padding: 2px 4px;
+  margin: -3px -5px;
+  width: calc(100% + 10px);
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+textarea.editable:hover {
+  border-color: color-mix(in srgb, currentColor 30%, transparent);
+}
+textarea.editable:focus {
+  border-color: color-mix(in srgb, currentColor 55%, transparent);
+  background: color-mix(in srgb, currentColor 5%, transparent);
+}
+
+}
+
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #eceaf3 0px, #f7f6fb 80px, #eceaf3 160px);
+  background-size: 800px 100%;
+  animation: shimmer 1.3s infinite linear;
+  border-radius: 10px;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.rise { animation: rise 0.35s ease-out both; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
