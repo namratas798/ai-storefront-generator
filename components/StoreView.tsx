@@ -361,10 +361,12 @@ function ProductCard({
                 spellCheck={false}
                 className="mt-1.5 w-full rounded-xl px-3 py-2.5 text-[14px] outline-none border bg-white text-[#16131f]"
                 style={{ borderColor: deliveryOk ? t.muted + "55" : "#c2410c" }}
+                aria-invalid={!deliveryOk}
               />
-              <span className="block mt-1.5" style={{ color: !p.delivery ? "#c2410c" : deliveryOk ? t.muted : "#c2410c" }}>
+              {/* A tip, not an error: publishing without it is fine for testing demand. Only a malformed value is flagged. */}
+              <span className="block mt-1.5" style={{ color: deliveryOk ? t.muted : "#c2410c" }}>
                 {!p.delivery
-                  ? "⚠ Add this before you start selling. You can publish without it to test demand."
+                  ? "💡 Tip: add this before you start selling. Fine to leave empty while you test interest."
                   : deliveryOk
                     ? "✓ Private. Buyers get this only after they pay."
                     : "This doesn't look like a link or phone number. Check it before you start selling."}

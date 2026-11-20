@@ -189,7 +189,10 @@ export default function Home() {
           <EditorHeader
             store={draft.store}
             onTheme={(theme) => set({ store: { ...draft.store!, theme } })}
-            onBack={() => set({ step: "input" })}
+            onBack={() => {
+              set({ step: "input" });
+              window.scrollTo({ top: 0 });
+            }}
             published={!!draft.slug}
             actions={
               <div className="hidden lg:flex gap-2 ml-2">
@@ -308,16 +311,42 @@ export default function Home() {
 
 /** Laptop-only right column: the result next to the form, so a reviewer sees both at a glance. */
 function DesktopShowcase() {
+  // "loading" → "ready", or "failed" if the example hasn't loaded after 8 s. Never a blank white box.
+  const [state, setState] = useState<"loading" | "ready" | "failed">("loading");
+  useEffect(() => {
+    const t = setTimeout(() => setState((s) => (s === "loading" ? "failed" : s)), 8000);
+    return () => clearTimeout(t);
+  }, []);
   return (
     <aside className="hidden lg:flex flex-col items-center sticky top-10 w-[340px] shrink-0" aria-label="Example store">
       <p className="text-[13px] font-bold uppercase tracking-[0.12em] text-[var(--soft)]">What you get</p>
       <div className="mt-3 w-[300px] h-[600px] rounded-[44px] bg-[#16131f] p-[10px] shadow-2xl">
         <div className="w-full h-full rounded-[34px] overflow-hidden bg-white relative">
+          {state !== "ready" && (
+            <div className="absolute inset-0 p-5 flex flex-col gap-3" aria-hidden={state === "loading"}>
+              <div className="skeleton h-20 w-full" />
+              <div className="skeleton h-14 w-14 -mt-9 ml-3" style={{ borderRadius: 9999 }} />
+              <div className="skeleton h-5 w-2/3" />
+              <div className="skeleton h-3 w-full" />
+              <div className="skeleton h-3 w-5/6" />
+              <div className="skeleton h-32 w-full mt-3" />
+              {state === "failed" && (
+                <a
+                  href={`/${EXAMPLE_SLUG}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 text-center text-[13px] font-semibold text-[var(--brand)]"
+                >
+                  Open the example store →
+                </a>
+              )}
+            </div>
+          )}
           <iframe
             src={`/${EXAMPLE_SLUG}`}
             title="Example store made by AI"
-            loading="lazy"
-            className="absolute top-0 left-0 border-0 origin-top-left"
+            onLoad={() => setState("ready")}
+            className={`absolute top-0 left-0 border-0 origin-top-left transition-opacity ${state === "ready" ? "opacity-100" : "opacity-0"}`}
             style={{ width: 390, height: 754, transform: "scale(0.718)" }}
           />
         </div>
@@ -701,11 +730,10 @@ function Published({
 
       <div>
       {missing > 0 && (
-        <div className="mt-6 rounded-2xl bg-amber-50 border border-amber-200 p-4 text-[13.5px] text-amber-900">
-          <b>
-            {missing === 1 ? "1 product has" : `${missing} products have`} no delivery link yet.
-          </b>{" "}
-          That's fine for testing interest, but add {missing === 1 ? "it" : "them"} before you start selling so buyers get what they paid for.
+        <div className="mt-6 rounded-2xl bg-[#eef6ff] border border-[#cfe3ff] p-4 text-[13.5px] text-[#173b6b]">
+          <b>💡 Next step: add delivery links.</b>{" "}
+          {missing === 1 ? "1 product doesn't" : `${missing} products don't`} have one yet. That's fine while you test interest; add{" "}
+          {missing === 1 ? "it" : "them"} before you start selling so buyers get what they paid for.
           <button onClick={onEdit} className="block mt-2 font-bold underline underline-offset-2">
             Add delivery links
           </button>
