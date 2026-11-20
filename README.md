@@ -36,10 +36,10 @@ Without Redis env vars, published pages are kept in memory, which is fine for lo
 | Variable | Required | Notes |
 |---|---|---|
 | `GEMINI_API_KEY` | one of the two | Primary provider (`GEMINI_MODEL`, default `gemini-3.8-flash`, falls back to `gemini-flash-latest`) |
-| `OPENAI_COMPAT_API_KEY` | one of the two | Fallback; any OpenAI-compatible API. Defaults to Groq `llama-3.3-70b-versatile` |
+| `OPENAI_COMPAT_API_KEY` | one of the two | Fallback; any OpenAI-compatible API. Defaults to Groq `openai/gpt-oss-120b` |
 | `OPENAI_COMPAT_BASE_URL`, `OPENAI_COMPAT_MODEL` | no | Point at OpenAI, OpenRouter and so on |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` | on Vercel | Upstash Redis for published pages and counters |
-| `LLM_TIMEOUT_MS`, `LLM_BUDGET_MS` | no | Per-attempt timeout (25000) and total AI time budget (40000) |
+| `LLM_TIMEOUT_MS`, `LLM_BUDGET_MS` | no | Per-attempt timeout (20000) and total AI time budget (40000) |
 | `DISABLE_INSTAGRAM` | no | `1` skips the best-effort Instagram read |
 
 No keys are committed. `.env*` is git-ignored.
@@ -63,4 +63,4 @@ lib/instagram.ts          Best-effort public profile meta read (never required)
 
 ## Stack and tools
 
-Next.js 16 (App Router), React 19, Tailwind 4, Zod 4, Upstash Redis. Gemini Flash with Groq Llama 3.3 70B as fallback. Built with Claude Code as the pair programmer: scaffolding, components, edge-case test scripts and mobile screenshot checks with Playwright.
+Next.js 16 (App Router), React 19, Tailwind 4, Zod 4, Upstash Redis. Gemini Flash with Groq gpt-oss-120b as fallback. Built with Claude Code as the pair programmer: scaffolding, components, edge-case test scripts and mobile screenshot checks with Playwright.

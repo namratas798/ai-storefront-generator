@@ -13,7 +13,7 @@ import { z } from "zod";
 type Msg = { system: string; user: string };
 type Provider = { name: string; call: (m: Msg, signal: AbortSignal) => Promise<string> };
 
-const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS || 25000);
+const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS || 20000);
 // Stop starting new attempts after this, so the whole request fits in the 60 s function limit.
 const BUDGET_MS = Number(process.env.LLM_BUDGET_MS || 40000);
 
@@ -61,7 +61,7 @@ function providers(): Provider[] {
   }
   if (process.env.OPENAI_COMPAT_API_KEY) {
     const base = (process.env.OPENAI_COMPAT_BASE_URL || "https://api.groq.com/openai/v1").replace(/\/$/, "");
-    const model = process.env.OPENAI_COMPAT_MODEL || "llama-3.3-70b-versatile";
+    const model = process.env.OPENAI_COMPAT_MODEL || "openai/gpt-oss-120b";
     list.push({
       name: `openai-compat:${model}`,
       call: async ({ system, user }, signal) => {
@@ -75,8 +75,10 @@ function providers(): Provider[] {
           body: JSON.stringify({
             model,
             temperature: 0.8,
-            max_tokens: 4096,
+            max_tokens: 8192,
             response_format: { type: "json_object" },
+            // gpt-oss models reason before answering; keep it light for speed.
+            ...(model.includes("gpt-oss") ? { reasoning_effort: "low" } : {}),
             messages: [
               { role: "system", content: system },
               { role: "user", content: user },
@@ -91,6 +93,10 @@ function providers(): Provider[] {
       },
     });
   }
+  // Order: primary Gemini model first, then the fast backup provider, then other Gemini models.
+  // A slow or overloaded Gemini must not use up the time budget before the backup gets a turn.
+  const compat = list.findIndex((p) => p.name.startsWith("openai-compat"));
+  if (compat > 1) list.splice(1, 0, ...list.splice(compat, 1));
   return list;
 }
 
@@ -159,7 +165,12 @@ export async function generateStructured<T>(
         current = repair(msg, raw, problems);
       } catch (e) {
         lastError = `${p.name}: ${ctrl.signal.aborted ? "timed out" : (e as Error).message}`;
-        break; // network/timeout → go straight to the next provider
+        // "Overloaded / rate limited" is usually momentary: retry this model once after a pause.
+        if (!ctrl.signal.aborted && round === 0 && /\b(429|503)\b/.test((e as Error).message)) {
+          await new Promise((r) => setTimeout(r, 1500));
+          continue;
+        }
+        break; // timeout or hard error → go straight to the next provider
       } finally {
         clearTimeout(timer);
       }
