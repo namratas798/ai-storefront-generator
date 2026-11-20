@@ -20,6 +20,8 @@ const EXAMPLES = [
 ];
 const STEPS = ["Understanding your niche", "Picking products your audience will buy", "Pricing for India", "Writing your page"];
 const CLIENT_TIMEOUT_MS = 58000;
+/** A real, AI-generated store published on this site, shown to people who want to see the result first. */
+const EXAMPLE_SLUG = process.env.NEXT_PUBLIC_EXAMPLE_SLUG || "example-creator";
 
 const emptyInput: Input = { handle: "", description: "", audience: "5k_20k", language: "english" };
 
@@ -314,15 +316,27 @@ function InputScreen({
   const canSubmit = input.handle.trim() || input.description.trim();
   return (
     <div className="px-5 pt-8 pb-32">
-      <div className="inline-flex items-center gap-2 text-[12px] font-bold text-[var(--brand)] bg-[var(--brand-soft)] px-3 py-1 rounded-full">
-        ✨ AI Storefront
+      <div className="flex items-center justify-between gap-3">
+        <div className="inline-flex items-center gap-2 text-[12px] font-bold text-[var(--brand)] bg-[var(--brand-soft)] px-3 py-1 rounded-full">
+          ✨ AI Storefront
+        </div>
+        <a href={`/${EXAMPLE_SLUG}`} className="text-[13px] font-semibold text-[var(--brand)]">
+          See an example store →
+        </a>
       </div>
       <h1 className="text-[30px] leading-[1.1] font-extrabold mt-4 tracking-tight">
         Your store, ready to share in a minute.
       </h1>
       <p className="text-[var(--soft)] mt-3 text-[15px] leading-relaxed">
-        Tell us what you do. We'll suggest what to sell, price it for India and write your page. You can change everything.
+        Tell us what you do. Get product ideas, prices that work in India and a page you can share, all written for you.
       </p>
+      {/* Answers a first-time creator's worries before they type anything. */}
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 text-[12.5px] font-semibold text-[#0e7a55]">
+        <span>✓ Free</span>
+        <span>✓ No sign-up</span>
+        <span>✓ Edit everything</span>
+        <span>✓ Live only when you publish</span>
+      </div>
 
       {hasDraft && (
         <button onClick={onResume} className="mt-5 w-full text-left rounded-2xl border border-[var(--line)] p-3 text-sm">
@@ -410,6 +424,31 @@ function InputScreen({
           </button>
         </BottomBar>
       </form>
+
+      {/* How it works: for people arriving cold, e.g. from the link on a published store. */}
+      <section className="mt-10 rounded-2xl bg-[#f7f6fb] p-4" aria-label="How it works">
+        <h2 className="text-[13px] font-bold uppercase tracking-[0.12em] text-[var(--soft)]">How it works</h2>
+        <ol className="mt-3 space-y-3">
+          {[
+            ["Describe yourself", "One line about what you teach, make or talk about."],
+            ["Get your store", "A bio and 2–4 products, priced for your audience, in seconds."],
+            ["Edit and share", "Change anything, then share one link on WhatsApp and Instagram."],
+          ].map(([title, body], i) => (
+            <li key={title} className="flex gap-3">
+              <span className="w-7 h-7 shrink-0 grid place-items-center rounded-full bg-[var(--brand)] text-white text-[13px] font-bold">
+                {i + 1}
+              </span>
+              <span className="text-[14px] leading-snug">
+                <b>{title}</b>
+                <span className="block text-[var(--soft)]">{body}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <a href={`/${EXAMPLE_SLUG}`} className="inline-block mt-4 text-[13.5px] font-semibold text-[var(--brand)]">
+          See what a finished store looks like →
+        </a>
+      </section>
     </div>
   );
 }

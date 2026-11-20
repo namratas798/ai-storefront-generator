@@ -44,8 +44,16 @@ export default function PublicStore({ store }: { store: PublicStoreData }) {
     window.location.href = "/";
   }
 
+  const isExample = store.slug === (process.env.NEXT_PUBLIC_EXAMPLE_SLUG || "example-creator");
+
   return (
     <main className="mx-auto max-w-md min-h-dvh shadow-[0_0_40px_rgba(0,0,0,0.06)]" style={{ background: t.bg }}>
+      {isExample && (
+        <div className="sticky top-0 z-30 bg-[#16131f] text-white text-[13px] px-4 py-2.5 flex items-center gap-3">
+          <span className="flex-1">Example store, made by AI from one line of description.</span>
+          <a href="/" className="font-bold underline underline-offset-2 whitespace-nowrap">Make yours →</a>
+        </div>
+      )}
       <StoreView store={store} onBuy={buy} />
       <footer className="text-center text-[11px] pb-8" style={{ color: t.muted }}>
         <a href="/" className="underline underline-offset-2">Make your own store in a minute ✨</a>
