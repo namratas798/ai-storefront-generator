@@ -9,7 +9,7 @@ Built as the SuperProfile PM take-home (AI Storefront Generator).
 **Live:** https://ai-storefront-generator-pi.vercel.app
 · **Example store:** https://ai-storefront-generator-pi.vercel.app/example-creator
 · **AI status:** https://ai-storefront-generator-pi.vercel.app/api/health
-· **Walkthrough:** loom.com/share/ba374272d9f74bc4a83af16d721153b7
+· **Walkthrough:** https://loom.com/share/ba374272d9f74bc4a83af16d721153b7
 
 ## How it works (30 seconds)
 
